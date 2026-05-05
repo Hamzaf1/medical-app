@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "583710969422",
+    "project_id": "medicare-hamza-2026",
+    "storage_bucket": "medicare-hamza-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:583710969422:android:4641670b84d61b45e53d1f",
+        "android_client_info": {
+          "package_name": "com.example.medicare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCm_WMshXZCFEtQoMwG9pmDPXUEbLOwRO0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
