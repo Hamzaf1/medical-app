@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../shared/models/doctor_model.dart';
-import '../providers/booking_provider.dart';
 
 class BookingScreen extends ConsumerStatefulWidget {
   final DoctorModel doctor;
@@ -17,231 +15,328 @@ class BookingScreen extends ConsumerStatefulWidget {
 }
 
 class _BookingScreenState extends ConsumerState<BookingScreen> {
-  DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
-  String? _selectedTimeSlot;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedDay = _focusedDay;
-  }
-
-  void _bookAppointment() {
-    if (_selectedDay == null || _selectedTimeSlot == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a date and time slot')),
-      );
-      return;
-    }
-
-    // Combine date and time slot
-    final timeFormat = DateFormat('hh:mm a');
-    final time = timeFormat.parse(_selectedTimeSlot!);
-    final appointmentDateTime = DateTime(
-      _selectedDay!.year,
-      _selectedDay!.month,
-      _selectedDay!.day,
-      time.hour,
-      time.minute,
-    );
-
-    ref.read(bookingProvider.notifier).bookAppointment(
-      doctorId: widget.doctor.uid,
-      doctorName: widget.doctor.name,
-      specialty: widget.doctor.specialty,
-      dateTime: appointmentDateTime,
-    );
-  }
+  DateTime _selectedDate = DateTime(2024, 10, 10);
+  String _selectedSlot = '09:45 AM';
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bookingState = ref.watch(bookingProvider);
-
-    ref.listen<AsyncValue>(bookingProvider, (_, state) {
-      if (state.hasError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${state.error}')),
-        );
-      } else if (!state.isLoading && state.hasValue) {
-        // Success
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => AlertDialog(
-            title: const Text('Booking Confirmed!'),
-            content: const Text('Your appointment has been successfully booked.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  context.pop(); // Close dialog
-                  context.pop(); // Go back to home
-                },
-                child: const Text('Done'),
-              ),
-            ],
-          ),
-        );
-      }
-    });
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Book Appointment'),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildDoctorInfo(theme),
-              const SizedBox(height: 24),
-              Text(
-                'Select Date',
-                style: theme.textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              _buildCalendar(theme),
-              const SizedBox(height: 24),
-              Text(
-                'Select Time Slot',
-                style: theme.textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              _buildTimeSlots(theme),
-              const SizedBox(height: 48),
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: ElevatedButton(
-            onPressed: bookingState.isLoading ? null : _bookAppointment,
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+        title: Row(
+          children: [
+            const CircleAvatar(
+              radius: 18,
+              backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=sarah'),
             ),
-            child: bookingState.isLoading
-                ? const CircularProgressIndicator(color: Colors.white)
-                : Text('Book Appointment - \$${widget.doctor.consultationFee.toStringAsFixed(0)}'),
+            const SizedBox(width: 12),
+            Text(
+              'Acdital Healthcare',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: const Color(0xFF004D99),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_none_rounded),
+            onPressed: () {},
           ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Doctor Profile Card
+            _doctorProfileCard(),
+            const SizedBox(height: 32),
+
+            // Date Selection
+            Text('October 2024', style: theme.textTheme.titleLarge),
+            const Text('Select your preferred date for the visit', style: TextStyle(color: Colors.grey, fontSize: 14)),
+            const SizedBox(height: 16),
+            _horizontalDatePicker(),
+            const SizedBox(height: 32),
+
+            // Available Slots
+            Row(
+              children: [
+                Text('Available Slots', style: theme.textTheme.titleLarge),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE3F2FD),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.access_time, size: 14, color: Color(0xFF006699)),
+                      const SizedBox(width: 4),
+                      const Text('Thursday, Oct 10', style: TextStyle(color: Color(0xFF006699), fontWeight: FontWeight.bold, fontSize: 12)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const Text('Times shown in your local timezone', style: TextStyle(color: Colors.grey, fontSize: 12)),
+            const SizedBox(height: 24),
+
+            _slotSection('MORNING', ['08:30 AM', '09:00 AM', '09:45 AM', '11:15 AM'], Icons.wb_sunny_outlined),
+            const SizedBox(height: 24),
+            _slotSection('AFTERNOON', ['01:30 PM', '02:00 PM', '03:30 PM', '04:45 PM'], Icons.wb_cloudy_outlined),
+            const SizedBox(height: 24),
+            _slotSection('EVENING', ['06:00 PM', '06:30 PM', '07:15 PM'], Icons.nights_stay_outlined),
+            const SizedBox(height: 100), // Space for bottom card
+          ],
         ),
       ),
+      bottomSheet: _bottomConfirmCard(),
     );
   }
 
-  Widget _buildDoctorInfo(ThemeData theme) {
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 40,
-          backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-          backgroundImage: widget.doctor.profileImageUrl.isNotEmpty 
-              ? CachedNetworkImageProvider(widget.doctor.profileImageUrl) 
-              : null,
-          child: widget.doctor.profileImageUrl.isEmpty
-              ? Icon(Icons.person, size: 40, color: theme.colorScheme.primary)
-              : null,
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _doctorProfileCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.grey.withOpacity(0.1)),
+      ),
+      child: Column(
+        children: [
+          Row(
             children: [
-              Text(
-                widget.doctor.name,
-                style: theme.textTheme.headlineMedium,
+              Stack(
+                children: [
+                  const CircleAvatar(
+                    radius: 40,
+                    backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=julian'),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                      child: const Icon(Icons.verified, color: Colors.teal, size: 20),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                widget.doctor.specialty,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: theme.colorScheme.secondary,
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE3F2FD),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text('Cardiologist', style: TextStyle(color: Color(0xFF006699), fontSize: 12, fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text('Dr. Julian Thorne', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24)),
+                    const Row(
+                      children: [
+                        Icon(Icons.location_on_outlined, size: 14, color: Colors.grey),
+                        SizedBox(width: 4),
+                        Text('St. Mary\'s Medical Center', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
+          const SizedBox(height: 20),
+          const Divider(),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _infoItem('EXPERIENCE', '12 Years'),
+              _infoItem('RATING', '4.9 (2.4k)', isRating: true),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Consultation Fee', style: TextStyle(color: Colors.grey)),
+              const Text('\$120.00', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Insurance Coverage', style: TextStyle(color: Colors.grey)),
+              const Text('Accepted', style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoItem(String label, String value, {bool isRating = false}) {
+    return Column(
+      children: [
+        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 10, letterSpacing: 1.1)),
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            if (isRating) const Icon(Icons.star, color: Colors.orange, size: 16),
+            if (isRating) const SizedBox(width: 4),
+            Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildCalendar(ThemeData theme) {
+  Widget _horizontalDatePicker() {
+    return SizedBox(
+      height: 90,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: 31,
+        itemBuilder: (context, index) {
+          final day = index + 1;
+          final isSelected = day == 10;
+          return Container(
+            width: 55,
+            margin: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(
+              color: isSelected ? const Color(0xFF006699) : const Color(0xFFE3F2FD).withOpacity(0.5),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  day.toString(),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: isSelected ? Colors.white : Colors.black87,
+                  ),
+                ),
+                if (isSelected) const SizedBox(height: 4),
+                if (isSelected) Container(width: 4, height: 4, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _slotSection(String title, List<String> slots, IconData icon) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: Colors.grey),
+            const SizedBox(width: 8),
+            Text(title, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, letterSpacing: 1.1, fontSize: 12)),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: slots.map((slot) => _slotChip(slot)).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _slotChip(String time) {
+    final isSelected = time == _selectedSlot;
+    final isInactive = time == '03:30 PM'; // Mock inactive state
+
+    return InkWell(
+      onTap: isInactive ? null : () => setState(() => _selectedSlot = time),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFE3F2FD) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF006699) : Colors.grey.withOpacity(0.2),
+            width: isSelected ? 2 : 1,
+          ),
+          opacity: isInactive ? 0.5 : 1,
+        ),
+        child: Text(
+          time,
+          style: TextStyle(
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isInactive ? Colors.grey : Colors.black87,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _bottomConfirmCard() {
     return Container(
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+        color: Colors.white,
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, -5))],
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.calendar_today_outlined, size: 18, color: Color(0xFF006699)),
+              const SizedBox(width: 8),
+              const Text('Selected Appointment', style: TextStyle(color: Colors.grey, fontSize: 12)),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text('Oct 10, 2024 at $_selectedSlot', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF006699),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Text('Confirm Booking', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  SizedBox(width: 12),
+                  Icon(Icons.arrow_forward, color: Colors.white),
+                ],
+              ),
+            ),
           ),
         ],
       ),
-      child: TableCalendar(
-        firstDay: DateTime.now(),
-        lastDay: DateTime.now().add(const Duration(days: 90)),
-        focusedDay: _focusedDay,
-        selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-        onDaySelected: (selectedDay, focusedDay) {
-          setState(() {
-            _selectedDay = selectedDay;
-            _focusedDay = focusedDay;
-            _selectedTimeSlot = null; // Reset time slot when date changes
-          });
-        },
-        calendarStyle: CalendarStyle(
-          selectedDecoration: BoxDecoration(
-            color: theme.colorScheme.primary,
-            shape: BoxShape.circle,
-          ),
-          todayDecoration: BoxDecoration(
-            color: theme.colorScheme.secondary.withOpacity(0.5),
-            shape: BoxShape.circle,
-          ),
-        ),
-        headerStyle: const HeaderStyle(
-          formatButtonVisible: false,
-          titleCentered: true,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTimeSlots(ThemeData theme) {
-    if (widget.doctor.availableSlots.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text('No available slots for this doctor.'),
-        ),
-      );
-    }
-
-    return Wrap(
-      spacing: 12.0,
-      runSpacing: 12.0,
-      children: widget.doctor.availableSlots.map((slot) {
-        final isSelected = _selectedTimeSlot == slot;
-        return ChoiceChip(
-          label: Text(slot),
-          selected: isSelected,
-          onSelected: (selected) {
-            setState(() {
-              _selectedTimeSlot = selected ? slot : null;
-            });
-          },
-          selectedColor: theme.colorScheme.secondary,
-          labelStyle: TextStyle(
-            color: isSelected ? Colors.white : theme.textTheme.bodyMedium?.color,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        );
-      }).toList(),
     );
   }
 }
+extension on Widget {
+  Widget withOpacity(double opacity) => Opacity(opacity: opacity, child: this);
+}
+

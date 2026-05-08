@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'patient_home_screen.dart';
-import '../../../appointments/screens/appointments_screen.dart';
+import '../../appointments/screens/appointments_screen.dart';
 import '../../ai_chat/screens/ai_chat_screen.dart';
 import '../../profile/screens/patient_profile_screen.dart';
+import 'doctor_discovery_screen.dart'; // NEW
 
 class PatientMainScreen extends StatefulWidget {
   const PatientMainScreen({super.key});
@@ -18,7 +19,7 @@ class _PatientMainScreenState extends State<PatientMainScreen> {
   final List<Widget> _screens = [
     const PatientHomeScreen(),
     const AppointmentsScreen(),
-    const AiChatScreen(),
+    const DoctorDiscoveryScreen(),
     const PatientProfileScreen(),
   ];
 
@@ -40,22 +41,22 @@ class _PatientMainScreenState extends State<PatientMainScreen> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
+            activeIcon: Icon(Icons.home_rounded),
             label: 'Home',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_month_outlined),
-            activeIcon: Icon(Icons.calendar_month),
-            label: 'Appointments',
+            activeIcon: Icon(Icons.calendar_month_rounded),
+            label: 'Schedule',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.smart_toy_outlined),
-            activeIcon: Icon(Icons.smart_toy),
-            label: 'AI Chat',
+            icon: Icon(Icons.search_rounded),
+            activeIcon: Icon(Icons.search_rounded),
+            label: 'Search',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
+            icon: Icon(Icons.person_outline_rounded),
+            activeIcon: Icon(Icons.person_rounded),
             label: 'Profile',
           ),
         ],
@@ -63,3 +64,4 @@ class _PatientMainScreenState extends State<PatientMainScreen> {
     );
   }
 }
+

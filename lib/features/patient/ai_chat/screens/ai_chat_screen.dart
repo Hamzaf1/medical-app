@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:intl/intl.dart';
-import '../providers/chat_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AiChatScreen extends ConsumerStatefulWidget {
   const AiChatScreen({super.key});
@@ -13,126 +11,207 @@ class AiChatScreen extends ConsumerStatefulWidget {
 
 class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   final _messageController = TextEditingController();
-  final _scrollController = ScrollController();
-
-  @override
-  void dispose() {
-    _messageController.dispose();
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _sendMessage() {
-    final text = _messageController.text;
-    if (text.trim().isNotEmpty) {
-      ref.read(chatProvider.notifier).sendMessage(text);
-      _messageController.clear();
-      _scrollToBottom();
-    }
-  }
-
-  void _scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final chatState = ref.watch(chatProvider);
-
-    // Auto-scroll when new messages arrive
-    ref.listen<ChatState>(chatProvider, (previous, next) {
-      if (previous?.history.length != next.history.length) {
-        _scrollToBottom();
-      }
-      if (next.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.error!)),
-        );
-      }
-    });
-
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        title: const Text('AI Health Assistant'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Disclaimer'),
-                  content: const Text('This AI assistant provides general guidance and recommendations. It does NOT diagnose diseases or replace professional medical advice. Please consult a doctor for serious conditions.'),
-                  actions: [
-                    TextButton(onPressed: () => Navigator.pop(context), child: const Text('Understood')),
-                  ],
-                ),
-              );
-            },
-          )
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: CircleAvatar(
+            backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=ai'),
+          ),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.all(16.0),
-                itemCount: chatState.history.length + (chatState.isLoading ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index == chatState.history.length) {
-                    return _buildTypingIndicator(theme);
-                  }
-                  final content = chatState.history[index];
-                  return _ChatBubble(content: content);
-                },
+            Text(
+              'AI Health Assistant',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: const Color(0xFF001F3F),
               ),
             ),
-            _buildMessageInput(theme, chatState.isLoading),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Colors.teal,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Text(
+                  'ONLINE',
+                  style: TextStyle(fontSize: 10, color: Colors.teal, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                ),
+              ],
+            ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildTypingIndicator(ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            backgroundColor: theme.colorScheme.secondary.withOpacity(0.1),
-            radius: 16,
-            child: Icon(Icons.smart_toy, size: 16, color: theme.colorScheme.secondary),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_none_rounded, color: Color(0xFF001F3F)),
+            onPressed: () {},
           ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: theme.cardColor,
-              borderRadius: BorderRadius.circular(16),
+        ],
+        centerTitle: true,
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                // Info Box
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEEF2FF),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.info_outline, color: Colors.orange, size: 24),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'AI advice is for informational purposes only and does not replace professional medical advice. Always consult a doctor for diagnosis and treatment.',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: const Color(0xFF001F3F),
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+                
+                // Timestamp
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                    ),
+                    child: const Text(
+                      'Today, 9:41 AM',
+                      style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // AI Message
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF0099FF),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: const BorderRadius.only(
+                            topRight: Radius.circular(24),
+                            bottomLeft: Radius.circular(24),
+                            bottomRight: Radius.circular(24),
+                          ),
+                          border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                        ),
+                        child: Text(
+                          'Hello! I\'m your Acdital AI Health Assistant. How can I help you today? I can help you understand lab results, suggest healthy habits, or provide general information about symptoms.',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            height: 1.5,
+                            color: const Color(0xFF001F3F),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            child: const Row(
+          ),
+
+          // Bottom Input Section
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+            ),
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
-                  width: 12,
-                  height: 12,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                // Quick Actions
+                Row(
+                  children: [
+                    _quickAction('Check symptoms', Icons.medical_services_outlined),
+                    const SizedBox(width: 12),
+                    _quickAction('Explain lab results', Icons.science_outlined),
+                  ],
                 ),
-                SizedBox(width: 8),
-                Text('Thinking...'),
+                const SizedBox(height: 20),
+                // Message Field
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.attach_file, color: Colors.grey),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: _messageController,
+                          decoration: const InputDecoration(
+                            hintText: 'Message AI Assistant...',
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF0099FF),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Acdital AI may produce inaccurate information about medical subjects.',
+                  style: TextStyle(color: Colors.grey, fontSize: 10),
+                  textAlign: TextAlign.center,
+                ),
               ],
             ),
           ),
@@ -141,44 +220,24 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     );
   }
 
-  Widget _buildMessageInput(ThemeData theme, bool isLoading) {
+  Widget _quickAction(String text, IconData icon) {
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
+        color: const Color(0xFFE3F2FD),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFF0099FF).withOpacity(0.2)),
       ),
       child: Row(
         children: [
-          Expanded(
-            child: TextField(
-              controller: _messageController,
-              decoration: InputDecoration(
-                hintText: 'Type your message...',
-                filled: true,
-                fillColor: theme.cardColor,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              ),
-              onSubmitted: (_) => _sendMessage(),
-            ),
-          ),
-          const SizedBox(width: 12),
-          CircleAvatar(
-            backgroundColor: isLoading ? Colors.grey : theme.colorScheme.primary,
-            radius: 24,
-            child: IconButton(
-              icon: const Icon(Icons.send, color: Colors.white),
-              onPressed: isLoading ? null : _sendMessage,
+          Icon(icon, size: 16, color: const Color(0xFF006699)),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Color(0xFF006699),
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -187,69 +246,3 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   }
 }
 
-class _ChatBubble extends StatelessWidget {
-  final Content content;
-
-  const _ChatBubble({required this.content});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isUser = content.role == 'user';
-    final text = content.parts.whereType<TextPart>().map((p) => p.text).join('\\n');
-    final timeFormat = DateFormat('hh:mm a');
-    final timeString = timeFormat.format(DateTime.now()); // Using current time for display
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (!isUser) ...[
-            CircleAvatar(
-              backgroundColor: theme.colorScheme.secondary.withOpacity(0.1),
-              radius: 16,
-              child: Icon(Icons.smart_toy, size: 16, color: theme.colorScheme.secondary),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: isUser ? theme.colorScheme.primary : theme.cardColor,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(isUser ? 16 : 0),
-                  bottomRight: Radius.circular(isUser ? 0 : 16),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    text,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: isUser ? Colors.white : theme.textTheme.bodyLarge?.color,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    timeString,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: isUser ? Colors.white70 : theme.textTheme.bodySmall?.color?.withOpacity(0.5),
-                      fontSize: 10,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (isUser) const SizedBox(width: 24), // Offset for symmetry
-        ],
-      ),
-    );
-  }
-}

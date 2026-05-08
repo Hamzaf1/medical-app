@@ -3,149 +3,139 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Colors
-  static const Color primaryNavy = Color(0xFF0A1628);
+  static const Color primaryBlue = Color(0xFF007BFF);
+  static const Color deepNavy = Color(0xFF0A1628);
+  static const Color lightBlue = Color(0xFFE3F2FD);
+  static const Color backgroundLight = Color(0xFFF8F9FA);
+  static const Color surfaceWhite = Color(0xFFFFFFFF);
+  static const Color textDark = Color(0xFF1A1C1E);
+  static const Color textGrey = Color(0xFF6C757D);
   static const Color accentTeal = Color(0xFF00BFA5);
-  static const Color backgroundDark = Color(0xFF121212);
-  static const Color surfaceDark = Color(0xFF1E1E1E);
-  static const Color textLight = Color(0xFFFFFFFF);
-  static const Color textGrey = Color(0xFFB0BEC5);
-
-  static const Color backgroundLight = Color(0xFFF5F7FA);
-  static const Color surfaceLight = Color(0xFFFFFFFF);
-  static const Color textDark = Color(0xFF0A1628);
-
-  // Dark Theme
-  static ThemeData get darkTheme {
-    return ThemeData(
-      brightness: Brightness.dark,
-      primaryColor: primaryNavy,
-      scaffoldBackgroundColor: backgroundDark,
-      colorScheme: const ColorScheme.dark(
-        primary: accentTeal,
-        secondary: accentTeal,
-        surface: surfaceDark,
-        onPrimary: textLight,
-        onSurface: textLight,
-      ),
-      textTheme: _textTheme(Brightness.dark),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: primaryNavy,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: surfaceDark,
-        selectedItemColor: accentTeal,
-        unselectedItemColor: textGrey,
-      ),
-      cardTheme: CardThemeData(
-        color: surfaceDark,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: accentTeal,
-          foregroundColor: textLight,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-        ),
-      ),
-    );
-  }
+  static const Color errorRed = Color(0xFFDC3545);
 
   // Light Theme
   static ThemeData get lightTheme {
     return ThemeData(
       brightness: Brightness.light,
-      primaryColor: primaryNavy,
+      primaryColor: primaryBlue,
       scaffoldBackgroundColor: backgroundLight,
       colorScheme: const ColorScheme.light(
-        primary: primaryNavy,
+        primary: primaryBlue,
         secondary: accentTeal,
-        surface: surfaceLight,
-        onPrimary: textLight,
+        surface: surfaceWhite,
+        onPrimary: Colors.white,
         onSurface: textDark,
+        error: errorRed,
       ),
       textTheme: _textTheme(Brightness.light),
       appBarTheme: const AppBarTheme(
-        backgroundColor: primaryNavy,
-        foregroundColor: textLight,
+        backgroundColor: surfaceWhite,
+        foregroundColor: deepNavy,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
+        iconTheme: IconThemeData(color: deepNavy),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: surfaceLight,
-        selectedItemColor: primaryNavy,
+        backgroundColor: surfaceWhite,
+        selectedItemColor: primaryBlue,
         unselectedItemColor: textGrey,
+        showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
+        selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+        unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
       ),
       cardTheme: CardThemeData(
-        color: surfaceLight,
+        color: surfaceWhite,
+        elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: Colors.grey.withOpacity(0.1), width: 1),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryNavy,
-          foregroundColor: textLight,
+          backgroundColor: primaryBlue,
+          foregroundColor: Colors.white,
+          elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+          textStyle: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
         ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: primaryBlue, width: 2),
+        ),
+        hintStyle: GoogleFonts.inter(color: textGrey),
       ),
     );
   }
 
   // Text Theme using Google Fonts
   static TextTheme _textTheme(Brightness brightness) {
-    final textColor = brightness == Brightness.dark ? textLight : textDark;
-    
     return TextTheme(
-      displayLarge: GoogleFonts.playfairDisplay(
+      displayLarge: GoogleFonts.inter(
         fontSize: 32,
         fontWeight: FontWeight.bold,
-        color: textColor,
+        color: textDark,
       ),
-      displayMedium: GoogleFonts.playfairDisplay(
+      displayMedium: GoogleFonts.inter(
         fontSize: 28,
         fontWeight: FontWeight.bold,
-        color: textColor,
+        color: textDark,
       ),
-      displaySmall: GoogleFonts.playfairDisplay(
+      displaySmall: GoogleFonts.inter(
         fontSize: 24,
         fontWeight: FontWeight.bold,
-        color: textColor,
+        color: textDark,
       ),
-      headlineMedium: GoogleFonts.playfairDisplay(
+      headlineMedium: GoogleFonts.inter(
         fontSize: 20,
-        fontWeight: FontWeight.w600,
-        color: textColor,
+        fontWeight: FontWeight.bold,
+        color: textDark,
       ),
-      titleLarge: GoogleFonts.dmSans(
+      titleLarge: GoogleFonts.inter(
         fontSize: 18,
-        fontWeight: FontWeight.w600,
-        color: textColor,
+        fontWeight: FontWeight.w700,
+        color: textDark,
       ),
-      bodyLarge: GoogleFonts.dmSans(
+      titleMedium: GoogleFonts.inter(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: textDark,
+      ),
+      bodyLarge: GoogleFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.normal,
-        color: textColor,
+        color: textDark,
       ),
-      bodyMedium: GoogleFonts.dmSans(
+      bodyMedium: GoogleFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.normal,
-        color: textColor,
+        color: textDark,
       ),
-      labelLarge: GoogleFonts.dmSans(
+      labelLarge: GoogleFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: brightness == Brightness.dark ? textLight : textLight, // e.g. for buttons
+        color: textDark,
       ),
     );
   }
 }
+

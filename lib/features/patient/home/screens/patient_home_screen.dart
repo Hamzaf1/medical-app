@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import '../providers/doctor_provider.dart';
-import '../../../shared/models/doctor_model.dart';
-import '../../../shared/widgets/shimmer_doctor_card.dart';
-import '../../../shared/widgets/empty_state_widget.dart';
-import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class PatientHomeScreen extends ConsumerWidget {
   const PatientHomeScreen({super.key});
@@ -13,220 +8,296 @@ class PatientHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final selectedSpecialty = ref.watch(selectedSpecialtyProvider);
-    final filteredDoctors = ref.watch(filteredDoctorsProvider);
-    final doctorsAsync = ref.watch(doctorListProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Find your Doctor'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
+        title: Row(
           children: [
-            _buildSearchBar(context, ref),
-            _buildSpecialtyChips(context, ref, selectedSpecialty),
-            Expanded(
-              child: doctorsAsync.when(
-                loading: () => ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  itemCount: 3,
-                  itemBuilder: (context, index) => const ShimmerDoctorCard(),
-                ),
-                error: (err, stack) => Center(child: Text('Error: $err')),
-                data: (_) {
-                  if (filteredDoctors.isEmpty) {
-                    return const EmptyStateWidget(
-                      icon: Icons.search_off,
-                      title: 'No Doctors Found',
-                      message: 'We couldn\'t find any doctors matching your search or specialty criteria. Try adjusting your filters.',
-                    );
-                  }
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                    itemCount: filteredDoctors.length,
-                    itemBuilder: (context, index) {
-                      return DoctorCard(doctor: filteredDoctors[index]);
-                    },
-                  );
-                },
+            const CircleAvatar(
+              radius: 18,
+              backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=alex'),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Acdital Healthcare',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: const Color(0xFF004D99),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildSearchBar(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: TextField(
-        onChanged: (value) => ref.read(searchQueryProvider.notifier).state = value,
-        decoration: InputDecoration(
-          hintText: 'Search doctor, specialty...',
-          prefixIcon: const Icon(Icons.search),
-          filled: true,
-          fillColor: Theme.of(context).cardColor,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_none_rounded),
+            onPressed: () {},
           ),
-        ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildSpecialtyChips(BuildContext context, WidgetRef ref, String? selectedSpecialty) {
-    final specialties = ['Cardiologist', 'Dermatologist', 'Pediatrician', 'Neurologist', 'Dentist', 'Orthopedic'];
-    
-    return SizedBox(
-      height: 50,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12.0),
-        itemCount: specialties.length,
-        itemBuilder: (context, index) {
-          final specialty = specialties[index];
-          final isSelected = specialty == selectedSpecialty;
-          
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: ChoiceChip(
-              label: Text(specialty),
-              selected: isSelected,
-              onSelected: (selected) {
-                ref.read(selectedSpecialtyProvider.notifier).state = selected ? specialty : null;
-              },
-              selectedColor: Theme.of(context).colorScheme.secondary,
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'DASHBOARD',
+              style: TextStyle(
+                color: Color(0xFF006699),
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+                fontSize: 12,
               ),
             ),
-          );
-        },
-      ),
-    );
-  }
-}
+            const SizedBox(height: 8),
+            Text(
+              'Welcome back,\nAlexander',
+              style: GoogleFonts.inter(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                height: 1.1,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Your personalized health overview is ready. You have one appointment scheduled for tomorrow.',
+              style: TextStyle(color: Colors.grey, fontSize: 16),
+            ),
+            const SizedBox(height: 32),
 
-class DoctorCard extends StatelessWidget {
-  final DoctorModel doctor;
+            // Action Cards
+            _actionCard(
+              'Book Appointment',
+              'Schedule a visit with your primary care physician or specialist.',
+              Icons.calendar_today_outlined,
+              'Schedule Now',
+            ),
+            const SizedBox(height: 16),
+            _actionCard(
+              'My Records',
+              'Securely access your lab results, medical history, and prescriptions.',
+              Icons.folder_outlined,
+              'View Records',
+            ),
+            const SizedBox(height: 32),
 
-  const DoctorCard({super.key, required this.doctor});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16.0),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
+            // Upcoming Appointments
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                  backgroundImage: doctor.profileImageUrl.isNotEmpty 
-                      ? CachedNetworkImageProvider(doctor.profileImageUrl) 
-                      : null,
-                  child: doctor.profileImageUrl.isEmpty
-                      ? Icon(Icons.person, color: theme.colorScheme.primary)
-                      : null,
+                Text('Upcoming Appointments', style: theme.textTheme.titleLarge),
+                TextButton(
+                  onPressed: () {},
+                  child: const Text('View All', style: TextStyle(color: Color(0xFF006699))),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _upcomingAppointmentCard(),
+            const SizedBox(height: 24),
+            
+            // Health Stats
+            Row(
+              children: [
+                Expanded(
+                  child: _statCard('Resting Heart Rate', '68 BPM', 'Normal', Icons.favorite_border_rounded),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        doctor.name,
-                        style: theme.textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        doctor.specialty,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.secondary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(Icons.star, size: 16, color: Colors.amber[600]),
-                          const SizedBox(width: 4),
-                          Text(
-                            doctor.rating.toString(),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Icon(Icons.location_on, size: 16, color: theme.textTheme.bodySmall?.color),
-                          const SizedBox(width: 4),
-                          Text(
-                            doctor.city,
-                            style: theme.textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
+                  child: _statCard('Sleep Quality', '8h 12m', 'Excellent', Icons.bedtime_outlined),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+
+            // Health Insights
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Health Insights', style: theme.textTheme.titleLarge),
+                TextButton(
+                  onPressed: () {},
+                  child: Row(
+                    children: const [
+                      Text('Discover More', style: TextStyle(color: Color(0xFF006699))),
+                      Icon(Icons.arrow_forward, size: 16, color: Color(0xFF006699)),
                     ],
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Consultation Fee',
-                      style: theme.textTheme.bodySmall,
-                    ),
-                    Text(
-                      '\$${doctor.consultationFee.toStringAsFixed(0)}',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                  ],
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // Navigate to booking flow
-                    context.push('/book-appointment', extra: doctor);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text('Book Now'),
-                ),
-              ],
+            _insightCard(
+              '5 Daily habits for better cardiovascular health',
+              'Wellness',
+              'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=500',
+            ),
+            _insightCard(
+              'The connection between diet and mental focus',
+              'Nutrition',
+              'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=500',
             ),
           ],
         ),
       ),
     );
   }
+
+  Widget _actionCard(String title, String subtitle, IconData icon, String actionText) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.grey.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE3F2FD),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: const Color(0xFF006699)),
+          ),
+          const SizedBox(height: 16),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          const SizedBox(height: 8),
+          Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+          const SizedBox(height: 16),
+          InkWell(
+            onTap: () {},
+            child: Row(
+              children: [
+                Text(actionText, style: const TextStyle(color: Color(0xFF006699), fontWeight: FontWeight.bold)),
+                const SizedBox(width: 4),
+                const Icon(Icons.arrow_forward_ios, size: 14, color: Color(0xFF006699)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _upcomingAppointmentCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F7F9),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const CircleAvatar(
+                radius: 30,
+                backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=sarah'),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Dr. Sarah Jenkins', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                    const Text('Senior Cardiologist • General Checkup', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                const SizedBox(width: 8),
+                const Text('Tomorrow, Oct 24', style: TextStyle(fontWeight: FontWeight.w600)),
+                const Spacer(),
+                const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                const SizedBox(width: 8),
+                const Text('09:30 AM', style: TextStyle(fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF006699),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Check-in', style: TextStyle(color: Colors.white)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _statCard(String title, String value, String status, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: const Color(0xFF006699)),
+          const SizedBox(height: 12),
+          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              const SizedBox(width: 4),
+              Text(status, style: const TextStyle(color: Colors.grey, fontSize: 10)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _insightCard(String title, String category, String imageUrl) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Image.network(imageUrl, height: 180, width: double.infinity, fit: BoxFit.cover),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE3F2FD),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(category, style: const TextStyle(color: Color(0xFF006699), fontSize: 12, fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(height: 8),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          const SizedBox(height: 8),
+          const Text('Small changes in your morning routine can significantly impact your long-term heart...', style: TextStyle(color: Colors.grey, fontSize: 14)),
+        ],
+      ),
+    );
+  }
 }
+
